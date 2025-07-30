@@ -1,5 +1,7 @@
 <script setup>
 import { defineProps, computed } from 'vue';
+// eslint-disable-next-line no-unused-vars
+import {READING} from "@/data/art";
 
 const props = defineProps({
   posts: {
@@ -19,6 +21,12 @@ const filteredPosts = computed(() => {
   }
   return props.posts.filter(post => props.selectedCategories.includes(post.category));
 });
+
+// 跳转到文章详情页
+const Enter = () => {
+  // eslint-disable-next-line no-import-assign
+  READING=1;
+};
 </script>
 
 <template>
@@ -31,8 +39,9 @@ const filteredPosts = computed(() => {
       </div>
       <div class="content-container">
         <div class="title-date-container">
-          <h3 class="title">
-            <router-link :to="`/post/${post.id}`">{{ post.title }}</router-link>
+          <h3 class="title" @click="Enter">
+            <!-- 使用 slug 作为路由跳转参数 -->
+            <router-link :to="`/post/${post.slug}`">{{ post.title }}</router-link>
           </h3>
           <p class="date">{{ post.date }}</p>
         </div>
@@ -42,7 +51,8 @@ const filteredPosts = computed(() => {
             <span class="category-label">分类: </span>
             <span class="category-name">{{ post.category }}</span>
           </div>
-          <router-link :to="`/post/${post.id}`" class="read-more">阅读全文 →</router-link>
+          <!-- 使用 slug 作为路由跳转参数 -->
+          <router-link :to="`/post/${post.slug}`" class="read-more" @click="Enter">阅读全文 →</router-link>
         </div>
       </div>
     </article>

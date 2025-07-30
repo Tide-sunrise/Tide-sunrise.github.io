@@ -4,7 +4,7 @@
 </template>
 
 <script>
-import Homepage from "@/views/homepage.vue";
+import Homepage from "@/views/Homepage.vue";
 
 export default {
   name: 'App',

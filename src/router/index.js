@@ -1,23 +1,28 @@
-import { createRouter, createWebHistory } from 'vue-router'
-import Homepage from '../views/homepage.vue'  // 确保路径正确
-import PostDetail from '../components/PostList.vue'  // 确保路径正确
+import { createRouter, createWebHistory } from 'vue-router';
+import PostList from '../components/PostList.vue';
+import PostDetail from '../components/PostDetail.vue';
 
 const routes = [
     {
-        path: '/',
-        name: 'Homepage',
-        component: Homepage
+        path: '/posts',
+        name: 'PostList',
+        component: PostList,
+        props: route => ({
+            posts: route.params.posts || [],  // 传递文章列表
+            selectedCategories: route.params.selectedCategories || []  // 传递选中的分类
+        })
     },
     {
-        path: '/post/:id',
-        name: 'PostList',
-        component: PostDetail
-    }
-]
+        path: '/post/:slug',
+        name: 'PostDetail',
+        component: PostDetail,
+        props: true  // 使用 slug 作为 props 传递给 PostDetail
+    },
+];
 
 const router = createRouter({
     history: createWebHistory(process.env.BASE_URL),
-    routes
-})
+    routes,
+});
 
-export default router
+export default router;

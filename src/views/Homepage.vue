@@ -1,18 +1,15 @@
 <script setup>
-import { ref, onMounted, onBeforeUnmount } from 'vue';
-import logo from '@/assets/logo.png';
+import {ref, onMounted, onBeforeUnmount, computed} from 'vue';
 import Header from '@/components/Header.vue';
-
-import { ArrowUp } from '@element-plus/icons-vue';
-import PostList from "@/components/PostList.vue";
+import {ArrowUp} from '@element-plus/icons-vue';
+// import PostList from "@/components/PostList.vue";
 import Sidebar from "@/components/Sidebar.vue";
 
-const categories = ref(['Vue.js', 'JavaScript', '前端优化']);
 
 // 父组件状态：当前选中的分类
 const selectedCategories = ref([]);
 
-// 获取用户信息和文章数据（保持不变）
+// 获取用户信息和文章数据
 const username = '朝汐';
 const bio = '万物皆在万物之中';
 const school = '中南大学';
@@ -28,11 +25,45 @@ const education = {
   icon: require('@/assets/csu.png')
 };
 
-const posts = [
-  { id: 1, title: '使用 Vue 构建 GitHub 个人主页', date: '2025-07-28', summary: '介绍如何使用 Vue CLI 创建项目并部署到 GitHub Pages。', category: 'Vue.js', image: logo },
-  { id: 2, title: '前端性能优化实战', date: '2025-06-10', summary: '从图片优化到懒加载，手把手教你优化前端性能。', category: 'JavaScript', image: logo },
-  { id: 3, title: 'JavaScript 异步编程指南', date: '2025-05-22', summary: '彻底搞懂 async/await、Promise 和事件循环机制。', category: 'JavaScript', image: logo }
-];
+// 存储文章数据
+const posts = ref([]);
+
+
+
+// 使用 require.context 来动态加载 Markdown 文件
+const requireArticles = require.context('@/articles', false, /\.md$/);
+
+// 动态加载所有文章
+const loadArticles = async () => {
+  const articles = requireArticles.keys().map((file) => {
+    const module = requireArticles(file);
+
+    const { title, date, category, summary, image } = module.attributes || {};
+    const content = module.html || '';
+
+    // 使用标题生成一个 slug
+    const slug = title
+        .toLowerCase()
+        .replace(/\s+/g, '-')  // 替换空格为-
+        .replace(/[^\w-]/g, '') // 去掉非字母数字字符
+        .replace(/-$/, '');     // 去掉末尾的短横线
+
+    let imagePath = require(`@/assets/${image}`);
+
+    return {
+      slug,       // 生成 slug
+      title,
+      date,
+      category,
+      summary,
+      content,
+      image: imagePath,
+    };
+  });
+
+  posts.value = articles;
+};
+
 
 // 控制返回顶部按钮显示
 const showBackToTop = ref(false);
@@ -44,11 +75,12 @@ const handleScroll = () => {
 
 // 滚动到顶部的函数
 const scrollToTop = () => {
-  window.scrollTo({ top: 0, behavior: 'smooth' }); // 平滑滚动到顶部
+  window.scrollTo({top: 0, behavior: 'smooth'}); // 平滑滚动到顶部
 };
 
 // 页面挂载时监听滚动事件
 onMounted(() => {
+  loadArticles(); // 加载文章
   window.addEventListener('scroll', handleScroll);
 });
 
@@ -56,6 +88,22 @@ onMounted(() => {
 onBeforeUnmount(() => {
   window.removeEventListener('scroll', handleScroll);
 });
+
+// 通过计算属性获取唯一的分类
+const categories = computed(() => {
+  const allCategories = posts.value.map(post => post.category);
+  return [...new Set(allCategories)];  // 使用 Set 去重
+});
+
+const navigateToPosts = () => {
+  router.push({
+    name: 'PostList',
+    params: {
+      posts: posts.value,  // 传递 posts 数据
+      selectedCategories: selectedCategories.value  // 传递选中的分类
+    }
+  });
+};
 </script>
 
 <template>
@@ -76,10 +124,9 @@ onBeforeUnmount(() => {
     <!-- 主体内容 -->
     <main class="container main-content">
       <!-- 传递选中的分类到 PostList 组件 -->
-      <PostList
-          :posts="posts"
-          :selectedCategories="selectedCategories"
-      />
+      <div @click="navigateToPosts">
+        <router-view/>
+      </div>
 
       <!-- 传递 categories 给 Sidebar，监听分类选择 -->
       <Sidebar
@@ -90,7 +137,9 @@ onBeforeUnmount(() => {
 
     <!-- 返回顶部按钮 -->
     <div v-if="showBackToTop" @click="scrollToTop" class="back-to-top">
-      <el-icon class="el-icon"><ArrowUp class="el-icons" /></el-icon>
+      <el-icon class="el-icon">
+        <ArrowUp class="el-icons"/>
+      </el-icon>
     </div>
 
     <!-- 页脚 -->
@@ -126,7 +175,7 @@ $footer-background: #eee;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
   }
 
-  .container{
+  .container {
     display: flex;
     flex-direction: row;
     padding: 2rem;
@@ -147,52 +196,33 @@ $footer-background: #eee;
     bottom: 20px;
     right: 20px;
     background: linear-gradient(135deg, #66ccff, #0066cc);
-    //color: white;
     width: 5vh;
     height: 5vh;
     border-radius: 10px;
     font-size: 1vh;
     display: flex;
-
     align-items: center;
     justify-content: center;
-
-    //cursor: pointer;
-    //border: none;
-    //transition: opacity 0.3s;
-    //z-index: 2;
-
-    //.arrow {
-    //  //font-size: 3.2rem;
-    //  z-index: 5;
-    //}
 
     &:hover {
       background: linear-gradient(135deg, #0066cc, #66ccff);
     }
-    visibility: visible;
 
     .el-icon {
       display: flex;
       align-items: center;
       justify-content: center;
+
       .el-icons {
-        //font-size: 2.5vh; /* 设置图标大小 */
-        color: white;     /* 设置图标颜色 */
+        color: white;
         width: 2.5vh;
         height: 2.5vh;
       }
     }
-
-
-    /* 按钮显示 */
-    //opacity: 1;
-    //transition: opacity 0.3s;
   }
 
   .back-to-top[style*="opacity: 1"] {
     opacity: 1;
   }
 }
-
 </style>
