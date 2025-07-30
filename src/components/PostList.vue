@@ -12,6 +12,7 @@ const props = defineProps({
   }
 });
 
+// 根据选中的分类过滤文章
 const filteredPosts = computed(() => {
   if (props.selectedCategories.length === 0) {
     return props.posts; // 如果没有选中分类，显示所有文章
@@ -23,6 +24,7 @@ const filteredPosts = computed(() => {
 <template>
   <div class="posts">
     <h2>最新文章</h2>
+    <!-- 遍历筛选后的文章 -->
     <article v-for="(post, index) in filteredPosts" :key="index" class="post-card">
       <div class="image-container">
         <img :src="post.image" alt="Post image" class="post-image"/>

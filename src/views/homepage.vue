@@ -7,47 +7,31 @@ import { ArrowUp } from '@element-plus/icons-vue';
 import PostList from "@/components/PostList.vue";
 import Sidebar from "@/components/Sidebar.vue";
 
-
 const categories = ref(['Vue.js', 'JavaScript', '前端优化']);
 
+// 父组件状态：当前选中的分类
+const selectedCategories = ref([]);
+
+// 获取用户信息和文章数据（保持不变）
 const username = '朝汐';
 const bio = '万物皆在万物之中';
 const school = '中南大学';
 const location = '湖南';
 
-// 假设这些路径是动态的，或者是从父级传入的
-const avatar = require('@/assets/avatar.png');  // 传递头像图片路径
-const coverImage = require('@/assets/cover.jpg');  // 传递封面图片路径
+const avatar = require('@/assets/avatar.png');
+const coverImage = require('@/assets/cover.jpg');
 const education = {
   school: '中南大学',
   degree: '本科',
   major: '计算机科学与技术',
   graduationYear: 2026,
-  icon: require('@/assets/csu.png') // 假设这是学校图标的路径
+  icon: require('@/assets/csu.png')
 };
 
 const posts = [
-  {
-    title: '使用 Vue 构建 GitHub 个人主页',
-    date: '2025-07-28',
-    summary: '介绍如何使用 Vue CLI 创建项目并部署到 GitHub Pages。',
-    link: '#',
-    image: logo // 这里是示例图片链接
-  },
-  {
-    title: '前端性能优化实战',
-    date: '2025-06-10',
-    summary: '从图片优化到懒加载，手把手教你优化前端性能。',
-    link: '#',
-    image: logo
-  },
-  {
-    title: 'JavaScript 异步编程指南',
-    date: '2025-05-22',
-    summary: '彻底搞懂 async/await、Promise 和事件循环机制。',
-    link: '#',
-    image: logo
-  }
+  { id: 1, title: '使用 Vue 构建 GitHub 个人主页', date: '2025-07-28', summary: '介绍如何使用 Vue CLI 创建项目并部署到 GitHub Pages。', category: 'Vue.js', image: logo },
+  { id: 2, title: '前端性能优化实战', date: '2025-06-10', summary: '从图片优化到懒加载，手把手教你优化前端性能。', category: 'JavaScript', image: logo },
+  { id: 3, title: 'JavaScript 异步编程指南', date: '2025-05-22', summary: '彻底搞懂 async/await、Promise 和事件循环机制。', category: 'JavaScript', image: logo }
 ];
 
 // 控制返回顶部按钮显示
@@ -60,10 +44,7 @@ const handleScroll = () => {
 
 // 滚动到顶部的函数
 const scrollToTop = () => {
-  window.scrollTo({
-    top: 0,
-    behavior: 'smooth' // 平滑滚动到顶部
-  });
+  window.scrollTo({ top: 0, behavior: 'smooth' }); // 平滑滚动到顶部
 };
 
 // 页面挂载时监听滚动事件
@@ -94,20 +75,22 @@ onBeforeUnmount(() => {
 
     <!-- 主体内容 -->
     <main class="container main-content">
+      <!-- 传递选中的分类到 PostList 组件 -->
       <PostList
-        :posts="posts"
-        :categories="categories"
+          :posts="posts"
+          :selectedCategories="selectedCategories"
       />
 
-
+      <!-- 传递 categories 给 Sidebar，监听分类选择 -->
       <Sidebar
-        :categories="categories"
+          :categories="categories"
+          v-model:selectedCategories="selectedCategories"
       />
     </main>
 
     <!-- 返回顶部按钮 -->
     <div v-if="showBackToTop" @click="scrollToTop" class="back-to-top">
-      <el-icon class="el-icon"><ArrowUp class="el-icons"/></el-icon>
+      <el-icon class="el-icon"><ArrowUp class="el-icons" /></el-icon>
     </div>
 
     <!-- 页脚 -->

@@ -1,6 +1,7 @@
 .DS_Store
 node_modules
 shell.py
+\dist
 
 
 # local env files

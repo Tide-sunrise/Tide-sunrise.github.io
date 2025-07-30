@@ -1,3 +1,43 @@
+<script setup>
+import { defineProps, ref, watch, defineEmits } from 'vue';
+
+const props = defineProps({
+  selectedCategories: {
+    type: Array,
+    default: () => [] // 保证传入的是数组，避免 undefined
+  },
+  categories: {
+    type: Array,
+    default: () => [] // 保证分类也是数组
+  }
+});
+
+// 定义 emit 事件
+
+// eslint-disable-next-line vue/valid-define-emits
+const emit = defineEmits();
+
+// 将选中的分类保存在本地响应式变量中
+const selectedCategories = ref([...props.selectedCategories]);
+
+// 切换分类
+const toggleCategory = (category) => {
+  if (selectedCategories.value.includes(category)) {
+    selectedCategories.value = selectedCategories.value.filter(item => item !== category);
+  } else {
+    selectedCategories.value.push(category);
+  }
+
+  // 触发父组件更新选中分类
+  emit('update:selectedCategories', selectedCategories.value);
+};
+
+// 观察 selectedCategories 的变化
+watch(selectedCategories, (newVal) => {
+  console.log('Selected categories changed:', newVal);
+}, { deep: true });
+</script>
+
 <template>
   <div class="sidebar">
     <div class="sidebar-header">
@@ -15,40 +55,6 @@
     </ul>
   </div>
 </template>
-
-<script setup>
-import { defineProps, ref, watch, emit } from 'vue';
-
-const props = defineProps({
-  selectedCategories: {
-    type: Array,
-    default: () => [] // 保证传入的是数组，避免 undefined
-  },
-  categories: {
-    type: Array,
-    default: () => [] // 保证分类也是数组
-  }
-});
-
-const selectedCategories = ref([...props.selectedCategories]); // 保证 selectedCategories 是一个响应式的 ref
-
-// 切换分类
-const toggleCategory = (category) => {
-  if (selectedCategories.value.includes(category)) {
-    selectedCategories.value = selectedCategories.value.filter(item => item !== category);
-  } else {
-    selectedCategories.value.push(category);
-  }
-
-  // 触发父组件更新选中分类
-  emit('updateSelectedCategories', selectedCategories.value);
-};
-
-// 观察 selectedCategories 的变化
-watch(selectedCategories, (newVal) => {
-  console.log('Selected categories changed:', newVal);
-}, { deep: true });
-</script>
 
 <style scoped>
 /* 侧边栏外观 */
@@ -89,7 +95,7 @@ li {
 button {
   width: 100%;
   padding: 12px;
-  background-color: #f1f1f1;
+  background-color: #fff;
   border: none;
   border-radius: 5px;
   cursor: pointer;
