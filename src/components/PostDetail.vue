@@ -1,54 +1,49 @@
+<script setup>
+import { computed } from 'vue'
+
+const props = defineProps({
+  slug: String,
+  posts: {
+    type: Array,
+    default: () => []
+  }
+})
+
+const emit = defineEmits(['back'])
+
+// 根据 slug 找到对应文章
+const post = computed(() => {
+  return props.posts.find(p => p.slug === props.slug) || null
+})
+
+const goBack = () => {
+  emit('back')
+}
+</script>
+
 <template>
   <div v-if="post" class="post-detail">
-    <!-- 使用 router.back() 返回上一页 -->
     <button @click="goBack" class="back-to-list">返回</button>
+    <div class="underline"></div>
 
     <h1>{{ post.title }}</h1>
     <p>{{ post.date }}</p>
-    <div v-html="post.content"></div>
+    <div class="markdown-body" v-html="post.content"></div>
   </div>
   <div v-else>
     <p>文章未找到。</p>
   </div>
 </template>
 
-<script setup>
-import {ref, onMounted} from 'vue';
-import {useRoute, useRouter} from 'vue-router';
-import {READING} from "@/data/art";
-
-const route = useRoute();
-const router = useRouter();
-const post = ref(null);
-const pages = ref(0);
-
-// 模拟文章数据
-const postsData = [
-  {slug: 'vue-2', title: 'Vue 2 入门教程', date: '2025-06-01', content: '这是 Vue 2 的内容'},
-  {slug: 'vue-3', title: 'Vue 3 入门教程', date: '2025-07-01', content: '这是 Vue 3 的内容'}
-];
-
-onMounted(() => {
-  const postSlug = route.params.slug;
-  post.value = postsData.find(item => item.slug === postSlug);
-  pages.value = READING; // 记录阅读状态
-});
-
-// 返回上一页
-const goBack = () => {
-  router.back();
-  // eslint-disable-next-line no-import-assign
-  READING = pages.value-1; // 恢复阅读状态
-};
-</script>
-
-<style scoped>
+<style lang="scss" scoped>
 .post-detail {
-  max-width: 800px;
-  margin: 0 auto;
+  width: 95%;
+  margin-right: 5%;
   padding: 20px;
   background: #fff;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+
+  text-align: left; // 保证返回按钮不被居中
 }
 
 h1 {
@@ -66,15 +61,60 @@ p {
 .back-to-list {
   display: inline-block;
   padding: 10px 20px;
-  background-color: #66ccff;
-  color: #fff;
+  background-color: #fff;
+  color: #000;
   border: none;
   border-radius: 5px;
-  margin-bottom: 20px;
+  margin-bottom: 0px;
   cursor: pointer;
 }
 
 .back-to-list:hover {
-  background-color: #3399cc;
+  background-color: #f7f7f7;
 }
+
+.underline {
+  height: 2px;
+  background-color: #e0e0e0; /* 默认灰色 */
+  margin-top: 0px;
+  transition: background-color 0.3s ease;
+}
+
+.markdown-body {
+  text-align: left;
+  code {
+    background-color: #f6f8fa;
+    padding: 2px 4px;
+    border-radius: 3px;
+    font-family: monospace;
+  }
+
+  pre {
+    background: #f6f8fa;
+    padding: 1em;
+    overflow-x: auto;
+    border-radius: 6px;
+  }
+
+  h1, h2, h3 {
+    margin: 1em 0 0.5em;
+    font-weight: bold;
+  }
+
+  img {
+    display: flex;
+    align-items: center;
+    margin: 1.5em auto; /* 上下间距 + 居中 */
+    max-width: 100%;
+  }
+
+  blockquote {
+    padding: 0.5em 1em;
+    background: #f9f9f9;
+    border-left: 4px solid #66ccff;
+    color: #555;
+    margin: 1em 0;
+  }
+}
+
 </style>

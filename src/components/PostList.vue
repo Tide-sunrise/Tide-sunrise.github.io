@@ -1,7 +1,5 @@
 <script setup>
-import { defineProps, computed } from 'vue';
-// eslint-disable-next-line no-unused-vars
-import {READING} from "@/data/art";
+import { defineProps, computed } from 'vue'
 
 const props = defineProps({
   posts: {
@@ -12,36 +10,40 @@ const props = defineProps({
     type: Array,
     default: () => []
   }
-});
+})
 
 // 根据选中的分类过滤文章
 const filteredPosts = computed(() => {
-  if (props.selectedCategories.length === 0) {
-    return props.posts; // 如果没有选中分类，显示所有文章
+  if (!props.selectedCategories || props.selectedCategories.length === 0) {
+    return props.posts
   }
-  return props.posts.filter(post => props.selectedCategories.includes(post.category));
-});
+  return props.posts.filter(post => props.selectedCategories.includes(post.category))
+})
 
-// 跳转到文章详情页
-const Enter = () => {
-  // eslint-disable-next-line no-import-assign
-  READING=1;
-};
+// 点击文章标题或阅读全文时，触发事件告诉父组件“查看文章详情”
+const viewPost = (slug) => {
+  // 触发自定义事件，传递文章的 slug 或 id
+  // 这个事件需要父组件监听 @view-post="handleViewPost"
+  // 这样父组件就能知道用户点击了哪篇文章
+  emit('view-post', slug)
+}
+
+const emit = defineEmits(['view-post'])
 </script>
 
 <template>
   <div class="posts">
     <h2>最新文章</h2>
     <!-- 遍历筛选后的文章 -->
-    <article v-for="(post, index) in filteredPosts" :key="index" class="post-card">
+    <article v-for="(post, index) in filteredPosts" :key="index" class="post-card" >
       <div class="image-container">
-        <img :src="post.image" alt="Post image" class="post-image"/>
+        <img :src="post.image" alt="Post image" class="post-image" />
       </div>
       <div class="content-container">
         <div class="title-date-container">
-          <h3 class="title" @click="Enter">
-            <!-- 使用 slug 作为路由跳转参数 -->
-            <router-link :to="`/post/${post.slug}`">{{ post.title }}</router-link>
+          <!-- 用普通元素替代 router-link，点击触发事件 -->
+          <h3 class="title" @click="viewPost(post.slug)">
+            {{ post.title }}
           </h3>
           <p class="date">{{ post.date }}</p>
         </div>
@@ -51,13 +53,15 @@ const Enter = () => {
             <span class="category-label">分类: </span>
             <span class="category-name">{{ post.category }}</span>
           </div>
-          <!-- 使用 slug 作为路由跳转参数 -->
-          <router-link :to="`/post/${post.slug}`" class="read-more" @click="Enter">阅读全文 →</router-link>
+          <a href="javascript:;" class="read-more" @click.prevent="viewPost(post.slug)">
+            阅读全文 →
+          </a>
         </div>
       </div>
     </article>
   </div>
 </template>
+
 
 <style lang="scss" scoped>
 $primary-color: #66ccff;
@@ -69,7 +73,7 @@ $padding: 1rem;
 
 .posts {
   margin: 0 auto;
-  width: 75%;
+  width: 95%;
   margin-right: 5%;
   padding: 20px 0;
 

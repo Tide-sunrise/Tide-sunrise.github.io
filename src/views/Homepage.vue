@@ -5,7 +5,19 @@ import {ArrowUp} from '@element-plus/icons-vue';
 // import PostList from "@/components/PostList.vue";
 import Sidebar from "@/components/Sidebar.vue";
 
+import { useRouter } from 'vue-router';
 
+import PostList from '../components/PostList.vue'
+import PostDetail from '../components/PostDetail.vue'
+
+// 控制显示哪个组件
+const currentComponent = ref(PostList)
+const selectedPostId = ref(null)
+
+
+
+
+const router = useRouter();
 // 父组件状态：当前选中的分类
 const selectedCategories = ref([]);
 
@@ -95,15 +107,27 @@ const categories = computed(() => {
   return [...new Set(allCategories)];  // 使用 Set 去重
 });
 
+// eslint-disable-next-line no-unused-vars
 const navigateToPosts = () => {
-  router.push({
-    name: 'PostList',
-    params: {
-      posts: posts.value,  // 传递 posts 数据
-      selectedCategories: selectedCategories.value  // 传递选中的分类
-    }
-  });
+  router.currentRoute.value.meta.posts = posts.value;
+  router.currentRoute.value.meta.selectedCategories = selectedCategories.value;
+
+  router.push({ name: 'PostList' });
 };
+
+
+// 文章列表中点击某一项
+const handleViewPost = (postId) => {
+  selectedPostId.value = postId
+  currentComponent.value = PostDetail
+}
+
+// 从详情返回
+const handleBack = () => {
+  currentComponent.value = PostList
+  selectedPostId.value = null
+}
+
 </script>
 
 <template>
@@ -124,9 +148,19 @@ const navigateToPosts = () => {
     <!-- 主体内容 -->
     <main class="container main-content">
       <!-- 传递选中的分类到 PostList 组件 -->
-      <div @click="navigateToPosts">
-        <router-view/>
-      </div>
+<!--      <div class="nav-window" @click="navigateToPosts">-->
+<!--        <router-view />-->
+<!--      </div>-->
+
+      <component
+          :is="currentComponent"
+          v-model:selectedCategories="selectedCategories"
+          :slug="selectedPostId"
+          :posts="posts"
+          :categories="categories"
+          @view-post="handleViewPost"
+          @back="handleBack"
+      />
 
       <!-- 传递 categories 给 Sidebar，监听分类选择 -->
       <Sidebar
@@ -181,6 +215,9 @@ $footer-background: #eee;
     padding: 2rem;
     margin: 0 auto;
     width: 120vh; /* 设置容器宽度 */
+    .nav-window{
+      width: 80%;
+    }
   }
 
   .footer {
